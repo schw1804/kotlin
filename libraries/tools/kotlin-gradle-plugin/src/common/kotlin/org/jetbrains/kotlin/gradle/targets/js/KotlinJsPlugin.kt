@@ -34,13 +34,12 @@ open class KotlinJsPlugin(
         checkGradleCompatibility()
 
         val kotlinExtension = project.kotlinExtension as KotlinJsProjectExtension
-        customizeKotlinDependencies(project)
-
         kotlinExtension.apply {
             irPreset = KotlinJsIrSingleTargetPreset(project)
             legacyPreset = KotlinJsSingleTargetPreset(project)
             defaultJsCompilerType = PropertiesProvider(project).jsCompiler
         }
+        customizeKotlinDependencies(project)
 
         project.runProjectConfigurationHealthCheckWhenEvaluated {
             @Suppress("DEPRECATION")

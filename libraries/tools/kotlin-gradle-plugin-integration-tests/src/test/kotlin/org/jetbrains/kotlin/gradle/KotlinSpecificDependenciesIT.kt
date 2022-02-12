@@ -30,7 +30,7 @@ class KotlinSpecificDependenciesIT : KGPBaseTest() {
     fun testStdlibByDefaultJvm(gradleVersion: GradleVersion) {
         project("simpleProject", gradleVersion) {
             removeDependencies(buildGradle)
-            checkTaskCompileClasspath("compileKotlin", listOf("kotlin-stdlib" /*any of them*/))
+            checkTaskCompileClasspath("compileKotlin", listOf("kotlin-stdlib-jdk8"))
         }
     }
 
@@ -66,7 +66,7 @@ class KotlinSpecificDependenciesIT : KGPBaseTest() {
 
             checkTaskCompileClasspath(
                 "compileKotlinJs",
-                listOf("kotlin-stdlib"),
+                listOf("kotlin-stdlib-js"),
                 isBuildGradleKts = true
             )
         }
@@ -115,7 +115,7 @@ class KotlinSpecificDependenciesIT : KGPBaseTest() {
             buildJdk = jdkVersion.location
         ) {
             removeDependencies(buildGradle)
-            checkTaskCompileClasspath("compileDebugKotlin", listOf("kotlin-stdlib" /*any of them*/))
+            checkTaskCompileClasspath("compileDebugKotlin", listOf("kotlin-stdlib-jdk8"))
         }
     }
 
@@ -192,28 +192,6 @@ class KotlinSpecificDependenciesIT : KGPBaseTest() {
         }
     }
 
-    @DisplayName("Adds kotlin-stdlib variant based on jvmTarget value")
-    @JvmGradlePluginTests
-    @GradleTest
-    fun testStdlibBasedOnJdk(gradleVersion: GradleVersion) {
-        project("simpleProject", gradleVersion) {
-            removeDependencies(buildGradle)
-            buildGradle.modify { "$it\nkotlin.target.compilations[\"main\"].kotlinOptions { jvmTarget = \"1.6\" }" }
-            val version = defaultBuildOptions.kotlinVersion
-            checkTaskCompileClasspath(
-                "compileKotlin",
-                listOf("kotlin-stdlib-$version"),
-                listOf("kotlin-stdlib-jdk7", "kotlin-stdlib-jdk8")
-            )
-
-            buildGradle.modify { "$it\nkotlin.target.compilations[\"main\"].kotlinOptions { jvmTarget = \"11\" }" }
-            checkTaskCompileClasspath(
-                "compileKotlin",
-                listOf("kotlin-stdlib", "kotlin-stdlib-jdk7", "kotlin-stdlib-jdk8"),
-            )
-        }
-    }
-
     @JvmGradlePluginTests
     @DisplayName("Explicit kotlin-stdlib version overrides default one")
     @GradleTest
@@ -234,6 +212,42 @@ class KotlinSpecificDependenciesIT : KGPBaseTest() {
                 listOf("kotlin-stdlib-${defaultBuildOptions.kotlinVersion}"),
                 listOf("kotlin-stdlib-jdk8")
             )
+        }
+    }
+
+    @JvmGradlePluginTests
+    @DisplayName("KT-41642: adding stdlib should not resolve dependencies eagerly")
+    @GradleTest
+    fun testStdlibEagerDependencies(gradleVersion: GradleVersion) {
+        project("simpleProject", gradleVersion) {
+
+            // Disabling auto-adding kotlin.test dependencies
+            gradleProperties.appendText(
+                """
+                
+                kotlin.test.infer.jvm.variant=false
+                """.trimIndent()
+            )
+
+            buildGradle.appendText(
+                //language=Groovy
+                """
+
+                configurations.each { config ->
+                	config.dependencies.addAllLater(
+                        project.objects.listProperty(Dependency.class).value(
+                            project.provider {
+                		        throw new Throwable("Dependency resolved in ${'$'}{config.name}!")
+                	        }
+                        )
+                    )
+                }
+                """.trimIndent()
+            )
+
+            build("help") {
+                assertOutputDoesNotContain("Dependency resolved in")
+            }
         }
     }
 
@@ -620,11 +634,15 @@ class KotlinSpecificDependenciesIT : KGPBaseTest() {
             """.trimIndent()
         )
 
-        build("${subproject?.prependIndent(":").orEmpty()}:$printingTaskName") {
+        build("${subproject?.prependIndent(":").orEmpty()}:$printingTaskName", forceOutput = true) {
             val itemsLine = output.lines().single { "###$printingTaskName" in it }.substringAfter(printingTaskName)
             val items = itemsLine.removeSurrounding("[", "]").split(", ").toSet()
-            checkAnyItemsContains.forEach { pattern -> assertTrue { items.any { pattern in it } } }
-            checkNoItemContains.forEach { pattern -> assertFalse { items.any { pattern in it } } }
+            checkAnyItemsContains.forEach { pattern ->
+                assertTrue("Dependencies does not contain $pattern") { items.any { pattern in it } }
+            }
+            checkNoItemContains.forEach { pattern ->
+                assertFalse("Dependencies contain $pattern") { items.any { pattern in it } }
+            }
         }
     }
 
