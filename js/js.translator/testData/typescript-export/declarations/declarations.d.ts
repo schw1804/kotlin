@@ -1,6 +1,12 @@
 declare namespace JS_TESTS {
     type Nullable<T> = T | null | undefined
     namespace foo {
+        interface OptionalFieldsInterface {
+            readonly required: number;
+            readonly notRequired?: Nullable<number>;
+        }
+    }
+    namespace foo {
         const _val: number;
         let _var: number;
         const _valCustomWithField: number;
@@ -238,6 +244,7 @@ declare namespace JS_TESTS {
             constructor(test: T);
             get test(): T;
         }
+        function processOptionalInterface(a: foo.OptionalFieldsInterface): string;
     }
     namespace _objects_ {
         const foo$Parent$Nested1: {

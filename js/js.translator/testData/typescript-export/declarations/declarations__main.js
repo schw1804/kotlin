@@ -28,16 +28,23 @@ var TestAbstract = JS_TESTS.foo.TestAbstract;
 var TestDataClass = JS_TESTS.foo.TestDataClass;
 var TestEnumClass = JS_TESTS.foo.TestEnumClass;
 var TestInterfaceImpl = JS_TESTS.foo.TestInterfaceImpl;
-var processInterface = JS_TESTS.foo.processInterface;
+var processOptionalInterface = JS_TESTS.foo.processOptionalInterface;
 var OuterClass = JS_TESTS.foo.OuterClass;
 var KT38262 = JS_TESTS.foo.KT38262;
 var JsNameTest = JS_TESTS.foo.JsNameTest;
+<<<<<<< HEAD
 var Parent = JS_TESTS.foo.Parent;
 var getParent = JS_TESTS.foo.getParent;
 var createNested1 = JS_TESTS.foo.createNested1;
 var createNested2 = JS_TESTS.foo.createNested2;
 var createNested3 = JS_TESTS.foo.createNested3;
+<<<<<<< HEAD
 var GenericClassWithConstraint = JS_TESTS.foo.GenericClassWithConstraint;
+=======
+=======
+var processInterface = JS_TESTS.foo.processInterface;
+>>>>>>> feat(KT-48814): add JsOptional annotation to support optional properties in d.ts.
+>>>>>>> 5f856ad9b11 (feat(KT-48814): add JsOptional annotation to support optional properties in d.ts.)
 function assert(condition) {
     if (!condition) {
         throw "Assertion failed";
@@ -141,6 +148,7 @@ function box() {
     assert(jsNameTest.runTest() === "JsNameTest");
     var jsNameNestedTest = JsNameTest.Companion.createChild(42);
     assert(jsNameNestedTest.value === 42);
+<<<<<<< HEAD
     // Do not strip types from those test cases (it is a check of nested objects types usability)
     var parent = Parent;
     var nested1 = Parent.Nested1;
@@ -151,7 +159,15 @@ function box() {
     assert(createNested1() === nested1);
     assert(createNested2() !== nested2);
     assert(createNested3() !== nested3);
+<<<<<<< HEAD
     var genericClassInstance = new GenericClassWithConstraint(new TestInterfaceImpl("test"));
     assert(processInterface(genericClassInstance.test) == "Owner TestInterfaceImpl has value 'test'");
+=======
+=======
+    assert(processOptionalInterface({ required: 4 }) == "4unknown");
+    assert(processOptionalInterface({ required: 4, notRequired: null }) == "4unknown");
+    assert(processOptionalInterface({ required: 4, notRequired: 5 }) == "45");
+>>>>>>> feat(KT-48814): add JsOptional annotation to support optional properties in d.ts.
+>>>>>>> 5f856ad9b11 (feat(KT-48814): add JsOptional annotation to support optional properties in d.ts.)
     return "OK";
 }
