@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.gradle.targets.js.KotlinJsTarget
 import org.jetbrains.kotlin.gradle.targets.js.binaryen.BinaryenExec
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.npmProject
+import org.jetbrains.kotlin.gradle.targets.js.typescript.TypeScriptValidationTask
 import org.jetbrains.kotlin.gradle.tasks.locateOrRegisterTask
 import org.jetbrains.kotlin.gradle.tasks.registerTask
 import org.jetbrains.kotlin.gradle.utils.lowerCamelCaseName
@@ -41,6 +42,7 @@ constructor(
     KotlinWasmTargetDsl,
     KotlinJsSubTargetContainerDsl,
     KotlinWasmSubTargetContainerDsl {
+    private val propertiesProvider = PropertiesProvider(project)
     override lateinit var testRuns: NamedDomainObjectContainer<KotlinJsReportAggregatingTestRun>
         internal set
 
@@ -125,6 +127,7 @@ constructor(
 
                         it.finalizedBy(syncTask)
                     }
+
                 }
         }
     }
@@ -146,6 +149,18 @@ constructor(
             task.from(project.tasks.named(compilation.processResourcesTaskName))
 
             task.into(npmProject.dist)
+
+            task.finalizedBy(registerTypeScriptCheckTask(binary))
+        }
+    }
+
+    private fun registerTypeScriptCheckTask(binary: JsIrBinary): TaskProvider<TypeScriptValidationTask> {
+        return project.registerTask(binary.validateGeneratedTsTaskName) {
+            it.inputDir = binary.distribution.directory
+            it.validationStrategy = when (binary.mode) {
+                KotlinJsBinaryMode.DEVELOPMENT -> propertiesProvider.jsIrGeneratedTypeScriptValidationDevStrategy
+                KotlinJsBinaryMode.PRODUCTION -> propertiesProvider.jsIrGeneratedTypeScriptValidationProdStrategy
+            }
         }
     }
 
