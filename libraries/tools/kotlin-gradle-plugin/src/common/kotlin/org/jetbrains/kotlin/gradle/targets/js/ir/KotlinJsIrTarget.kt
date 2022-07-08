@@ -115,7 +115,8 @@ constructor(
             compilation.binaries
                 .withType(JsIrBinary::class.java)
                 .all { binary ->
-                    val syncTask = registerCompileSync(binary)
+                    val tsValidationTask = registerTypeScriptCheckTask(binary)
+                    val syncTask = registerCompileSync(binary, tsValidationTask)
 
                     binary.linkTask.configure {
                         it.kotlinOptions.outputFile = project.buildDir
@@ -132,7 +133,7 @@ constructor(
         }
     }
 
-    private fun registerCompileSync(binary: JsIrBinary): TaskProvider<Copy> {
+    private fun registerCompileSync(binary: JsIrBinary, tsValidationTask: TaskProvider<*>?): TaskProvider<Copy> {
         val compilation = binary.compilation
         val npmProject = compilation.npmProject
         return project.registerTask(
@@ -150,16 +151,24 @@ constructor(
 
             task.into(npmProject.dist)
 
-            task.finalizedBy(registerTypeScriptCheckTask(binary))
+            if (tsValidationTask != null) {
+                task.finalizedBy(tsValidationTask)
+            }
         }
     }
 
-    private fun registerTypeScriptCheckTask(binary: JsIrBinary): TaskProvider<TypeScriptValidationTask> {
-        return project.registerTask(binary.validateGeneratedTsTaskName) {
-            it.inputDir = binary.distribution.directory
-            it.validationStrategy = when (binary.mode) {
-                KotlinJsBinaryMode.DEVELOPMENT -> propertiesProvider.jsIrGeneratedTypeScriptValidationDevStrategy
-                KotlinJsBinaryMode.PRODUCTION -> propertiesProvider.jsIrGeneratedTypeScriptValidationProdStrategy
+    private fun registerTypeScriptCheckTask(binary: JsIrBinary): TaskProvider<TypeScriptValidationTask>? {
+        val compilation = binary.compilation
+        val npmProject = compilation.npmProject
+        return if (compilation.name == KotlinCompilation.TEST_COMPILATION_NAME) {
+            null
+        } else {
+            project.registerTask(binary.validateGeneratedTsTaskName, listOf(compilation)) {
+                it.inputDir = npmProject.dist
+                it.validationStrategy = when (binary.mode) {
+                    KotlinJsBinaryMode.DEVELOPMENT -> propertiesProvider.jsIrGeneratedTypeScriptValidationDevStrategy
+                    KotlinJsBinaryMode.PRODUCTION -> propertiesProvider.jsIrGeneratedTypeScriptValidationProdStrategy
+                }
             }
         }
     }
