@@ -433,7 +433,7 @@ fun generateSingleWrappedModuleBody(
     )
 }
 
-class SourceMapsInfo(
+data class SourceMapsInfo(
     val sourceMapPrefix: String,
     val sourceRoots: List<String>,
     val outputDir: File?,

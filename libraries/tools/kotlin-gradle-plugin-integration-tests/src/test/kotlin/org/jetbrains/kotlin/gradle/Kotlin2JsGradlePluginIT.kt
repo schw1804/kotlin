@@ -685,44 +685,38 @@ abstract class AbstractKotlin2JsGradlePluginIT(protected val irBackend: Boolean)
         }
     }
 
-
     @DisplayName("source map is generated")
     @GradleTest
-    @DisabledIf(
-        "org.jetbrains.kotlin.gradle.AbstractKotlin2JsGradlePluginIT#getIrBackend",
-        disabledReason = "Source maps are not supported in IR backend"
-    )
     fun testKotlinJsSourceMap(gradleVersion: GradleVersion) {
-        project("kotlin2JsNoOutputFileProject", gradleVersion) {
-            buildGradle.appendText(
-                """
-                |
-                |compileKotlin2Js.kotlinOptions.sourceMap = true
-                |compileKotlin2Js.kotlinOptions.sourceMapPrefix = "prefixprefix/"
-                |compileKotlin2Js.kotlinOptions.outputFile = "${'$'}{buildDir}/kotlin2js/main/app.js"
-                """.trimMargin()
-            )
-
-            build("build") {
-                val mapFilePath = projectPath.resolve("build/kotlin2js/main/app.js.map")
-                assertFileExists(mapFilePath)
-                val sourceFilePath = "prefixprefix/src/main/kotlin/example/Dummy.kt"
-                assertFileContains(mapFilePath, "\"$sourceFilePath\"")
+        project("kotlin2JsProjectWithSourceMap", gradleVersion) {
+            build("assemble", "-Pkotlin.compiler.execution.strategy=in-process", enableGradleDebug = true) {
+                val mapFilePath = subProject("app").projectPath.resolve("build/kotlin2js/main/app.js.map")
+                assertFileContains(
+                    mapFilePath,
+                    "\"../../../src/main/kotlin/main.kt\"",
+                    "\"../../../../../lib/src/main/kotlin/foo.kt\"",
+                    "\"sourcesContent\":[null",
+                )
             }
         }
     }
 
     @DisplayName("sources can be embedded into source map")
     @GradleTest
-    @DisabledIf(
-        "org.jetbrains.kotlin.gradle.AbstractKotlin2JsGradlePluginIT#getIrBackend",
-        disabledReason = "Source maps are not supported in IR backend"
-    )
     fun testKotlinJsSourceMapInline(gradleVersion: GradleVersion) {
-        project("kotlin2JsProjectWithSourceMapInline", gradleVersion) {
-            build("build") {
-                val mapFilePath = subProject("app").kotlinClassesDir().resolve("app.js.map")
-                assertFileExists(mapFilePath)
+        project("kotlin2JsProjectWithSourceMap", gradleVersion) {
+            buildGradle.appendText(
+                """
+                |
+                |allprojects {
+                |    tasks.named('compileKotlin2Js') {
+                |        kotlinOptions.sourceMapEmbedSources = "always"
+                |    }
+                |}
+                """.trimMargin()
+            )
+            build("build", "-Pkotlin.compiler.execution.strategy=in-process", enableGradleDebug = true) {
+                val mapFilePath = subProject("app").projectPath.resolve("build/kotlin2js/main/app.js.map")
                 assertFileContains(
                     mapFilePath,
                     "\"./src/main/kotlin/main.kt\"",
