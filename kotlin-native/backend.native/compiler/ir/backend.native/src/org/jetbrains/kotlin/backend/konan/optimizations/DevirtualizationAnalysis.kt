@@ -1471,7 +1471,7 @@ internal object DevirtualizationAnalysis {
                             irBlock(expression) {
                                 val parameters = expression.getArgumentsWithSymbols().map { arg ->
                                     // Temporary val is not required here for a parameter, since each one is used for only one devirtualized callsite
-                                    irSplitCoercion(arg.second, null, arg.first.owner.type)
+                                    irSplitCoercion(arg.second, tempName = null, arg.first.owner.type)
                                 }
                                 +irDevirtualizedCall(expression, type, possibleCallees[0], parameters)
                             }
