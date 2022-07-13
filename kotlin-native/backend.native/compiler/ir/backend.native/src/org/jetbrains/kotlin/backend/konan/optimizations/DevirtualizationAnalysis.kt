@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.backend.common.lower.createIrBuilder
 import org.jetbrains.kotlin.backend.common.lower.irBlock
 import org.jetbrains.kotlin.backend.konan.*
 import org.jetbrains.kotlin.backend.konan.ir.isBoxOrUnboxCall
+import org.jetbrains.kotlin.backend.konan.optimizations.DevirtualizationAnalysis.irCoerce
 import org.jetbrains.kotlin.backend.konan.util.IntArrayList
 import org.jetbrains.kotlin.backend.konan.util.LongArrayList
 import org.jetbrains.kotlin.descriptors.ClassKind
@@ -1277,18 +1278,16 @@ internal object DevirtualizationAnalysis {
                 putValueArgument(0, value)
             }
 
-    sealed class PossiblyCoercedValue(val coercion: IrFunctionSymbol?) {
-        abstract fun getFullValue(irBuilder: IrBuilderWithScope): IrExpression
+    sealed class PossiblyCoercedValue(private val coercion: IrFunctionSymbol?) {
+        abstract fun getValue(irBuilder: IrBuilderWithScope): IrExpression
+        fun getFullValue(irBuilder: IrBuilderWithScope): IrExpression = irBuilder.run { irCoerce(getValue(this), coercion) }
+
         class OverVariable(val value: IrVariable, coercion: IrFunctionSymbol?) : PossiblyCoercedValue(coercion) {
-            override fun getFullValue(irBuilder: IrBuilderWithScope) = irBuilder.run {
-                irCoerce(irGet(value), coercion)
-            }
+            override fun getValue(irBuilder: IrBuilderWithScope) = irBuilder.run { irGet(value) }
         }
 
-        class OverExpression(val value: IrExpression, coercion: IrFunctionSymbol?): PossiblyCoercedValue(coercion) {
-            override fun getFullValue(irBuilder: IrBuilderWithScope) = irBuilder.run {
-                irCoerce(value, coercion)
-            }
+        class OverExpression(val value: IrExpression, coercion: IrFunctionSymbol?) : PossiblyCoercedValue(coercion) {
+            override fun getValue(irBuilder: IrBuilderWithScope) = value
         }
     }
 
@@ -1471,6 +1470,7 @@ internal object DevirtualizationAnalysis {
                         optimize && possibleCallees.size == 1 -> { // Monomorphic callsite.
                             irBlock(expression) {
                                 val parameters = expression.getArgumentsWithSymbols().map { arg ->
+                                    // Temporary val is not required here for a parameter, since each one is used for only one devirtualized callsite
                                     irSplitCoercion(arg.second, null, arg.first.owner.type)
                                 }
                                 +irDevirtualizedCall(expression, type, possibleCallees[0], parameters)
