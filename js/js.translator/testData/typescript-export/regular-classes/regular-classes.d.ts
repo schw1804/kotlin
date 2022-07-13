@@ -34,7 +34,7 @@ declare namespace JS_TESTS {
             then(): number;
             catch(): number;
         }
-        class GenericClassWithConstraint<T extends A6> {
+        class GenericClassWithConstraint<T extends foo.A6> {
             constructor(test: T);
             get test(): T;
         }
