@@ -768,7 +768,7 @@ public open class Throwable : kotlin.Any, java.io.Serializable {
     public open fun setStackTrace(/*0*/ p0: kotlin.Array<(out) java.lang.StackTraceElement!>!): kotlin.Unit
 }
 
-public object Unit {
+public data object Unit {
     /*primary*/ private constructor Unit()
 }
 

@@ -92,16 +92,13 @@ public fun Element.minusPolymorphicKey(key: Key<*>): CoroutineContext {
  * An empty coroutine context.
  */
 @SinceKotlin("1.3")
-public object EmptyCoroutineContext : CoroutineContext, Serializable {
+public data object EmptyCoroutineContext : CoroutineContext, Serializable {
     private const val serialVersionUID: Long = 0
-    private fun readResolve(): Any = EmptyCoroutineContext
 
     public override fun <E : Element> get(key: Key<E>): E? = null
     public override fun <R> fold(initial: R, operation: (R, Element) -> R): R = initial
     public override fun plus(context: CoroutineContext): CoroutineContext = context
     public override fun minusKey(key: Key<*>): CoroutineContext = this
-    public override fun hashCode(): Int = 0
-    public override fun toString(): String = "EmptyCoroutineContext"
 }
 
 //--------------------- internal impl ---------------------

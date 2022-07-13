@@ -743,7 +743,7 @@ public open class Throwable {
         public open fun `<get-message>`(): kotlin.String?
 }
 
-public object Unit {
+public data object Unit {
     /*primary*/ private constructor Unit()
 }
 

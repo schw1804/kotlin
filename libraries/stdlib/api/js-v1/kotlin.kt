@@ -3603,11 +3603,19 @@ public open class UninitializedPropertyAccessException : kotlin.RuntimeException
     public constructor UninitializedPropertyAccessException(cause: kotlin.Throwable?)
 }
 
-public object Unit {
+public data object Unit {
+    public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+    public open override fun hashCode(): kotlin.Int
+
     public open override fun toString(): kotlin.String
 }
 
-/*∆*/ public object Unit {
+/*∆*/ public data object Unit {
+/*∆*/     public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+/*∆*/
+/*∆*/     public open override fun hashCode(): kotlin.Int
+/*∆*/
 /*∆*/     public open override fun toString(): kotlin.String
 /*∆*/ }
 /*∆*/ 
