@@ -7,6 +7,8 @@ package test.enums
 
 import kotlin.enums.EnumEntriesList
 import kotlin.test.*
+import test.collections.behaviors.listBehavior
+import test.collections.compare
 
 class EnumEntriesListTest {
 
@@ -30,6 +32,12 @@ class EnumEntriesListTest {
     }
 
     @Test
+    fun testEmptyEnumBehaviour() {
+        val list = EnumEntriesList(EmptyEnum::values)
+        compare(EmptyEnum.values().toList(), list) { listBehavior() }
+    }
+
+    @Test
     fun testForEnum() {
         val list = EnumEntriesList(NonEmptyEnum::values)
         val goldenCopy = NonEmptyEnum.values().toList()
@@ -42,5 +50,11 @@ class EnumEntriesListTest {
         }
         assertFailsWith<IndexOutOfBoundsException> { list[-1] }
         assertFailsWith<IndexOutOfBoundsException> { list[goldenCopy.size] }
+    }
+
+    @Test
+    fun testyEnumBehaviour() {
+        val list = EnumEntriesList(NonEmptyEnum::values)
+        compare(NonEmptyEnum.values().toList(), list) { listBehavior() }
     }
 }

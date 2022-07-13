@@ -16,7 +16,7 @@ import kotlin.jvm.Volatile
  * An instance of this interface can only be obtained from `EnumClass.entries` property.
  */
 @ExperimentalStdlibApi
-// @SinceKotlin("1.8")
+@SinceKotlin("1.8")
 public sealed interface EnumEntries<E : Enum<E>> : List<E>
 
 /*
@@ -49,6 +49,7 @@ public sealed interface EnumEntries<E : Enum<E>> : List<E>
  * published, preventing any read races after the initialization.
  */
 @PublishedApi
+@SinceKotlin("1.8")
 @ExperimentalStdlibApi
 internal class EnumEntriesList<E : Enum<E>>(private val entriesProvider: () -> Array<E>) : EnumEntries<E>, AbstractList<E>() {
 
