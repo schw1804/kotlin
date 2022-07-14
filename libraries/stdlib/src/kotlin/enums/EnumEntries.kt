@@ -19,6 +19,11 @@ import kotlin.jvm.Volatile
 @SinceKotlin("1.8")
 public sealed interface EnumEntries<E : Enum<E>> : List<E>
 
+@PublishedApi
+@ExperimentalStdlibApi
+@SinceKotlin("1.8")
+internal fun <E : Enum<E>> enumEntries(entriesProvider: () -> Array<E>): EnumEntries<E> = EnumEntriesList(entriesProvider)
+
 /*
  * For enum class E, this class is instantiated in the following manner (NB it's pseudocode that does not
  * reflect code generation strategy precisely):
@@ -48,10 +53,9 @@ public sealed interface EnumEntries<E : Enum<E>> : List<E>
  * We allow racy initialization (e.g. entriesProvider can be invoked multiple times), but the resulting array is safely
  * published, preventing any read races after the initialization.
  */
-@PublishedApi
 @SinceKotlin("1.8")
 @ExperimentalStdlibApi
-internal class EnumEntriesList<E : Enum<E>>(private val entriesProvider: () -> Array<E>) : EnumEntries<E>, AbstractList<E>() {
+private class EnumEntriesList<E : Enum<E>>(private val entriesProvider: () -> Array<E>) : EnumEntries<E>, AbstractList<E>() {
 
     /*
      * Open questions to implementation:

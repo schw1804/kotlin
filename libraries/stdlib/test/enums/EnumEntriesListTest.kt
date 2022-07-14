@@ -5,7 +5,7 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package test.enums
 
-import kotlin.enums.EnumEntriesList
+import kotlin.enums.enumEntries
 import kotlin.test.*
 import test.collections.behaviors.listBehavior
 import test.collections.compare
@@ -20,26 +20,23 @@ class EnumEntriesListTest {
 
     @Test
     fun testForEmptyEnum() {
-        val list = EnumEntriesList(EmptyEnum::values)
+        val list = enumEntries(EmptyEnum::values)
         assertTrue(list.isEmpty())
         assertEquals(0, list.size)
         assertFalse { list is MutableList<*> }
         assertFailsWith<IndexOutOfBoundsException> { list[0] }
         assertFailsWith<IndexOutOfBoundsException> { list[-1] }
-        for (e in list) {
-            fail()
-        }
     }
 
     @Test
     fun testEmptyEnumBehaviour() {
-        val list = EnumEntriesList(EmptyEnum::values)
+        val list = enumEntries(EmptyEnum::values)
         compare(EmptyEnum.values().toList(), list) { listBehavior() }
     }
 
     @Test
     fun testForEnum() {
-        val list = EnumEntriesList(NonEmptyEnum::values)
+        val list = enumEntries(NonEmptyEnum::values)
         val goldenCopy = NonEmptyEnum.values().toList()
         assertEquals(goldenCopy, list)
         assertFalse { list is MutableList<*> }
@@ -54,7 +51,7 @@ class EnumEntriesListTest {
 
     @Test
     fun testyEnumBehaviour() {
-        val list = EnumEntriesList(NonEmptyEnum::values)
+        val list = enumEntries(NonEmptyEnum::values)
         compare(NonEmptyEnum.values().toList(), list) { listBehavior() }
     }
 }

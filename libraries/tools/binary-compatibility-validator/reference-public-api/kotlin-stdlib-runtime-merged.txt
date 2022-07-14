@@ -3118,17 +3118,8 @@ public abstract interface class kotlin/coroutines/jvm/internal/CoroutineStackFra
 public abstract interface class kotlin/enums/EnumEntries : java/util/List, kotlin/jvm/internal/markers/KMappedMarker {
 }
 
-public final class kotlin/enums/EnumEntriesList : kotlin/collections/AbstractList, kotlin/enums/EnumEntries {
-	public fun <init> (Lkotlin/jvm/functions/Function0;)V
-	public fun contains (Ljava/lang/Enum;)Z
-	public final fun contains (Ljava/lang/Object;)Z
-	public fun get (I)Ljava/lang/Enum;
-	public synthetic fun get (I)Ljava/lang/Object;
-	public fun getSize ()I
-	public fun indexOf (Ljava/lang/Enum;)I
-	public final fun indexOf (Ljava/lang/Object;)I
-	public fun lastIndexOf (Ljava/lang/Enum;)I
-	public final fun lastIndexOf (Ljava/lang/Object;)I
+public final class kotlin/enums/EnumEntriesKt {
+	public static final fun enumEntries (Lkotlin/jvm/functions/Function0;)Lkotlin/enums/EnumEntries;
 }
 
 public abstract interface annotation class kotlin/experimental/ExperimentalTypeInference : java/lang/annotation/Annotation {
