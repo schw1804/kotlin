@@ -128,6 +128,9 @@ private fun Project.configureStdlibDefaultDependency(
 
     when {
         project.hasKpmModel -> addStdlibToKpmProject(project, coreLibrariesVersion)
+        topLevelExtension is KotlinJsProjectExtension -> topLevelExtension.registerTargetObserver { target ->
+            target?.addStdlibDependency(configurations, dependencies, coreLibrariesVersion)
+        }
         topLevelExtension is KotlinSingleTargetExtension<*> -> topLevelExtension
             .target
             .addStdlibDependency(configurations, dependencies, coreLibrariesVersion)
@@ -268,6 +271,16 @@ private fun Project.configureKotlinTestDependency(
     coreLibrariesVersion: Provider<String>,
 ) {
     when (topLevelExtension) {
+        is KotlinJsProjectExtension -> topLevelExtension.registerTargetObserver { target ->
+            target?.configureKotlinTestDependency(
+                configurations,
+                coreLibrariesVersion,
+                objects,
+                dependencies,
+                tasks
+            )
+        }
+
         is KotlinSingleTargetExtension<*> -> topLevelExtension.target.configureKotlinTestDependency(
             configurations,
             coreLibrariesVersion,
