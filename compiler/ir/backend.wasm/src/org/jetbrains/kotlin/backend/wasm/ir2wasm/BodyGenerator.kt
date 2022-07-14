@@ -542,6 +542,11 @@ class BodyGenerator(
     }
 
     override fun visitWhen(expression: IrWhen) {
+
+        if (SwitchGenerator(expression, this, context.backendContext.wasmSymbols).generate()) {
+            return
+        }
+
         val resultType = context.transformBlockResultType(expression.type)
         var ifCount = 0
         var seenElse = false
