@@ -150,6 +150,9 @@ fun jsFunctionSignature(declaration: IrFunction, context: JsIrBackendContext): S
     declaration.extensionReceiverParameter?.let {
         nameBuilder.append("_r$${it.type.asString()}")
     }
+    declaration.dispatchReceiverParameter?.let {
+        nameBuilder.append("_d$${it.type.asString()}")
+    }
     declaration.valueParameters.ifNotEmpty {
         joinTo(nameBuilder, "") { "_${it.type.asString()}" }
     }
