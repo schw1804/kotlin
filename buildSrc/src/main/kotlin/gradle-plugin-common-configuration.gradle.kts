@@ -16,6 +16,11 @@ configureCommonPublicationSettingsForGradle()
 configureKotlinCompileTasksGradleCompatibility()
 extensions.extraProperties["kotlin.stdlib.default.dependency"] = "false"
 
+// Enable signing for publications into Gradle Plugin Portal
+if (!version.toString().contains("-SNAPSHOT")) {
+    extensions.extraProperties["signingRequired"] = "true"
+}
+
 // common plugin bundle configuration
 configure<PluginBundleExtension> {
     website = "https://kotlinlang.org/"
